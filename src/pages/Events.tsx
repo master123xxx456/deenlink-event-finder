@@ -3,169 +3,79 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Navigation } from "@/components/Navigation";
 import { FloatingChatBot } from "@/components/FloatingChatBot";
+import FilterPopup, { FilterState } from "@/components/FilterPopup";
+import EventScrapingService, { ScrapedEvent } from "@/services/EventScrapingService";
 import { 
   MapPin, 
   Calendar, 
   Users, 
   Search, 
-  Filter,
+  RefreshCw,
   Clock,
-  Star,
-  Heart
+  Wifi,
+  Database
 } from "lucide-react";
 
-interface Event {
-  id: string;
-  title: string;
-  masjid: string;
-  date: string;
-  time: string;
-  category: string;
-  attendees: number;
-  isRegistered: boolean;
-  recommendationType: "personalized" | "local" | "following";
-  distance: string;
-  description: string;
-  ageGroup: string;
+interface Event extends ScrapedEvent {
+  // Extends ScrapedEvent with any additional properties if needed
 }
 
 const Events = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedAgeGroup, setSelectedAgeGroup] = useState("all");
-  const [selectedDistance, setSelectedDistance] = useState("all");
+  const [events, setEvents] = useState<Event[]>([]);
   const [location, setLocation] = useState("Gaithersburg, MD");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [filters, setFilters] = useState<FilterState>({
+    searchQuery: "",
+    category: "all",
+    ageGroup: "all", 
+    distance: "all",
+    masjids: [],
+    dateRange: "all",
+    timeOfDay: "all",
+    source: []
+  });
 
-  const events: Event[] = [
-    {
-      id: "1",
-      title: "Friday Night Youth Program",
-      masjid: "Islamic Center of Maryland (ICM)",
-      date: "Dec 15, 2024",
-      time: "7:00 PM",
-      category: "Youth",
-      attendees: 45,
-      isRegistered: false,
-      recommendationType: "personalized",
-      distance: "2.3 miles",
-      description: "Join us for an engaging evening of Islamic knowledge, games, and community building for teenagers.",
-      ageGroup: "Teens"
-    },
-    {
-      id: "2",
-      title: "Halaqa: Stories of the Prophets",
-      masjid: "ADAMS Center",
-      date: "Dec 16, 2024",
-      time: "2:00 PM",
-      category: "Education",
-      attendees: 32,
-      isRegistered: true,
-      recommendationType: "following",
-      distance: "4.1 miles",
-      description: "Weekly study circle exploring the inspiring stories and lessons from the lives of the Prophets.",
-      ageGroup: "Adults"
-    },
-    {
-      id: "3",
-      title: "Family Sports Day & BBQ",
-      masjid: "Dar-us-Salaam",
-      date: "Dec 17, 2024",
-      time: "12:00 PM",
-      category: "Family",
-      attendees: 78,
-      isRegistered: false,
-      recommendationType: "local",
-      distance: "1.8 miles",
-      description: "Fun-filled day of sports activities and delicious BBQ for the whole family.",
-      ageGroup: "Family"
-    },
-    {
-      id: "4",
-      title: "Arabic Language Workshop",
-      masjid: "Islamic Center of Maryland (ICM)",
-      date: "Dec 18, 2024",
-      time: "6:30 PM",
-      category: "Education",
-      attendees: 28,
-      isRegistered: false,
-      recommendationType: "personalized",
-      distance: "2.3 miles",
-      description: "Beginner-friendly Arabic language class focusing on Quranic vocabulary and basic conversation.",
-      ageGroup: "Adults"
-    },
-    {
-      id: "5",
-      title: "Charity Drive: Winter Clothing",
-      masjid: "MCC Chicago",
-      date: "Dec 19, 2024",
-      time: "10:00 AM",
-      category: "Community Service",
-      attendees: 56,
-      isRegistered: false,
-      recommendationType: "local",
-      distance: "8.2 miles",
-      description: "Help us collect and distribute winter clothing for those in need in our community.",
-      ageGroup: "All Ages"
-    },
-    {
-      id: "6",
-      title: "Eid ul-Fitr Planning Committee",
-      masjid: "ADAMS Center",
-      date: "Dec 20, 2024",
-      time: "7:30 PM",
-      category: "Planning",
-      attendees: 15,
-      isRegistered: false,
-      recommendationType: "following",
-      distance: "4.1 miles",
-      description: "Join the committee to help plan our upcoming Eid celebration. Your ideas and volunteers are needed!",
-      ageGroup: "Adults"
-    },
-    {
-      id: "7",
-      title: "Kids Islamic Art & Crafts",
-      masjid: "Dar-us-Salaam",
-      date: "Dec 21, 2024",
-      time: "3:00 PM",
-      category: "Kids",
-      attendees: 22,
-      isRegistered: false,
-      recommendationType: "local",
-      distance: "1.8 miles",
-      description: "Creative Islamic art and crafts session for children to learn about their faith through hands-on activities.",
-      ageGroup: "Kids"
-    },
-    {
-      id: "8",
-      title: "Fundraiser Dinner: Palestine Relief",
-      masjid: "Islamic Center of Maryland (ICM)",
-      date: "Dec 22, 2024",
-      time: "6:00 PM",
-      category: "Fundraiser",
-      attendees: 120,
-      isRegistered: false,
-      recommendationType: "personalized",
-      distance: "2.3 miles",
-      description: "Join us for a special dinner event to raise funds for our brothers and sisters in Palestine.",
-      ageGroup: "All Ages"
-    }
-  ];
+  // Initialize event scraping service
+  useEffect(() => {
+    const scrapingService = EventScrapingService.getInstance();
+    
+    // Subscribe to event updates
+    const unsubscribe = scrapingService.subscribe((scrapedEvents) => {
+      setEvents(scrapedEvents);
+      setLastUpdated(new Date());
+      setIsRefreshing(false);
+    });
 
-  const categories = ["all", "Youth", "Education", "Family", "Community Service", "Kids", "Fundraiser", "Planning"];
-  const ageGroups = ["all", "Kids", "Teens", "Adults", "Family", "All Ages"];
-  const distances = ["all", "Within 5 miles", "Within 10 miles", "Within 25 miles"];
+    // Start auto-updating
+    scrapingService.startAutoUpdate();
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribe();
+      scrapingService.stopAutoUpdate();
+    };
+  }, []);
+
+  // Manual refresh function
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    const scrapingService = EventScrapingService.getInstance();
+    await scrapingService.refreshEvents();
+  };
 
   const filteredEvents = events.filter(event => {
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         event.masjid.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         event.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || event.category === selectedCategory;
-    const matchesAgeGroup = selectedAgeGroup === "all" || event.ageGroup === selectedAgeGroup;
+    const matchesSearch = event.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                         event.masjid.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                         event.description.toLowerCase().includes(filters.searchQuery.toLowerCase());
+    const matchesCategory = filters.category === "all" || event.category === filters.category;
+    const matchesAgeGroup = filters.ageGroup === "all" || event.ageGroup === filters.ageGroup;
+    const matchesMasjid = filters.masjids.length === 0 || filters.masjids.includes(event.masjid);
+    const matchesSource = filters.source.length === 0 || filters.source.includes(event.source);
     
-    return matchesSearch && matchesCategory && matchesAgeGroup;
+    return matchesSearch && matchesCategory && matchesAgeGroup && matchesMasjid && matchesSource;
   });
 
   const getRecommendationColor = (type: string) => {
@@ -209,51 +119,36 @@ const Events = () => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <Input
                 placeholder="Search events, masjids, or descriptions..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={filters.searchQuery}
+                onChange={(e) => setFilters({ ...filters, searchQuery: e.target.value })}
                 className="pl-12 pr-4 py-3 text-lg bg-white/95 backdrop-blur border-white/20 rounded-xl"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="bg-white/95 backdrop-blur border-white/20">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category === "all" ? "All Categories" : category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex justify-center">
+              <FilterPopup 
+                filters={filters}
+                onFiltersChange={setFilters}
+                onRefresh={handleRefresh}
+                isRefreshing={isRefreshing}
+              />
+            </div>
 
-              <Select value={selectedAgeGroup} onValueChange={setSelectedAgeGroup}>
-                <SelectTrigger className="bg-white/95 backdrop-blur border-white/20">
-                  <SelectValue placeholder="Age Group" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ageGroups.map(ageGroup => (
-                    <SelectItem key={ageGroup} value={ageGroup}>
-                      {ageGroup === "all" ? "All Age Groups" : ageGroup}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedDistance} onValueChange={setSelectedDistance}>
-                <SelectTrigger className="bg-white/95 backdrop-blur border-white/20">
-                  <SelectValue placeholder="Distance" />
-                </SelectTrigger>
-                <SelectContent>
-                  {distances.map(distance => (
-                    <SelectItem key={distance} value={distance}>
-                      {distance === "all" ? "Any Distance" : distance}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Data freshness indicator */}
+            <div className="text-center">
+              <div className="inline-flex items-center space-x-2 text-sm text-white/80 bg-black/20 rounded-full px-4 py-2 backdrop-blur">
+                <div className="flex items-center space-x-1">
+                  <Wifi className="w-4 h-4" />
+                  <Database className="w-4 h-4" />
+                </div>
+                <span>
+                  {lastUpdated 
+                    ? `Last updated: ${lastUpdated.toLocaleTimeString()}`
+                    : "Loading fresh data..."
+                  }
+                </span>
+                {isRefreshing && <RefreshCw className="w-4 h-4 animate-spin" />}
+              </div>
             </div>
           </div>
         </div>
@@ -267,8 +162,8 @@ const Events = () => {
               {filteredEvents.length} Events Found
             </h2>
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <Filter className="w-4 h-4" />
-              <span>Sorted by relevance</span>
+              <Database className="w-4 h-4" />
+              <span>Auto-updated from masjid sources</span>
             </div>
           </div>
 
@@ -277,9 +172,14 @@ const Events = () => {
               <Card key={event.id} className="hover:shadow-card transition-shadow bg-gradient-card border-border/50">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between mb-3">
-                    <Badge className={`text-xs ${getRecommendationColor(event.recommendationType)}`}>
-                      {getRecommendationLabel(event.recommendationType)}
-                    </Badge>
+                    <div className="flex gap-1">
+                      <Badge className={`text-xs ${getRecommendationColor(event.recommendationType)}`}>
+                        {getRecommendationLabel(event.recommendationType)}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {event.source}
+                      </Badge>
+                    </div>
                     <div className="flex items-center space-x-1 text-xs text-muted-foreground">
                       <MapPin className="w-3 h-3" />
                       <span>{event.distance}</span>
@@ -339,12 +239,16 @@ const Events = () => {
               <p className="text-muted-foreground mb-4">
                 Try adjusting your search criteria or browse all events.
               </p>
-              <Button onClick={() => {
-                setSearchQuery("");
-                setSelectedCategory("all");
-                setSelectedAgeGroup("all");
-                setSelectedDistance("all");
-              }}>
+              <Button onClick={() => setFilters({
+                searchQuery: "",
+                category: "all",
+                ageGroup: "all",
+                distance: "all",
+                masjids: [],
+                dateRange: "all",
+                timeOfDay: "all",
+                source: []
+              })}>
                 Clear Filters
               </Button>
             </div>
