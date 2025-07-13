@@ -1,18 +1,17 @@
-# Welcome to your Lovable project
-
-## Project info
-
+deen link is a web site that helps you fin mosques near you and notifies you about personolized events.
+Aiman:coder&writer
+mohammed mustefa:coder&writer
+imran:actor
+mohammed nesredin: actor
+ayub:reaseracher
+the problem was that the youth spent their time locked in their homes wastin their time and doing nothing.
+the solution was deen link because it notifies you about events that help you collabarate with the community
+we used lovable ai, virtual studio code, windsurf ai, and cursor ai.
+sign up with your email to use deen link
+video demo [https://youtu.be/iucsAj0lNQM]
 **URL**: https://lovable.dev/projects/075c6bca-5d03-4bc7-924c-6a2dc18dd831
 
-## How can I edit this code?
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/075c6bca-5d03-4bc7-924c-6a2dc18dd831) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
 
 **Use your preferred IDE**
 
