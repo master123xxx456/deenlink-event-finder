@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Navigation } from "@/components/Navigation";
+import Navigation from "@/components/Navigation";
 import { FloatingChatBot } from "@/components/FloatingChatBot";
 import { 
   Heart, 
@@ -54,79 +54,86 @@ const Following = () => {
 
   const followedMasjids: FollowedMasjid[] = [
     {
-      id: "2",
-      name: "ADAMS Center",
-      city: "Sterling",
-      state: "VA",
-      distance: "4.1 miles",
-      avatar: "/api/placeholder/80/80",
-      upcomingEvents: 6,
-      lastEventDate: "Dec 10, 2024",
+      id: "1",
+      name: "Diyanet Center of America",
+      city: "Lanham",
+      state: "MD",
+      distance: "5.2 miles",
+      avatar: "https://diyanetamerica.org/wp-content/uploads/2023/01/dca-exterior.jpg",
+      upcomingEvents: 12,
+      lastEventDate: "Today",
       followedDate: "Nov 15, 2024",
       notificationsEnabled: true,
       recentEvents: [
         {
           id: "e1",
+          title: "Friday Khutbah & Prayer",
+          date: "Today",
+          time: "1:30 PM",
+          attendees: 320
+        },
+        {
+          id: "e2",
+          title: "Quran Tafseer Class",
+          date: "Tomorrow",
+          time: "7:00 PM",
+          attendees: 45
+        }
+      ]
+    },
+    {
+      id: "2",
+      name: "ADAMS Center",
+      city: "Sterling",
+      state: "VA",
+      distance: "4.1 miles",
+      avatar: "https://www.adamscenter.org/wp-content/uploads/2022/01/ADAMS-Center-Sterling-Exterior.jpg",
+      upcomingEvents: 6,
+      lastEventDate: "Tomorrow",
+      followedDate: "Nov 20, 2024",
+      notificationsEnabled: true,
+      recentEvents: [
+        {
+          id: "e3",
           title: "Halaqa: Stories of the Prophets",
-          date: "Dec 16, 2024",
+          date: "Tomorrow",
           time: "2:00 PM",
           attendees: 32
         },
         {
-          id: "e2",
-          title: "Eid ul-Fitr Planning Committee",
-          date: "Dec 20, 2024",
-          time: "7:30 PM",
-          attendees: 15
+          id: "e4",
+          title: "Weekly Tafseer Class",
+          date: "Friday",
+          time: "8:00 PM",
+          attendees: 28
         }
       ]
     },
     {
       id: "4",
-      name: "MCC Chicago",
-      city: "Chicago",
-      state: "IL",
+      name: "Muslim Community Center (MCC)",
+      city: "Silver Spring",
+      state: "MD",
       distance: "8.2 miles",
-      avatar: "/api/placeholder/80/80",
-      upcomingEvents: 12,
-      lastEventDate: "Dec 12, 2024",
-      followedDate: "Nov 28, 2024",
+      avatar: "https://www.mccmd.org/wp-content/uploads/2022/05/mcc-entrance.jpg",
+      upcomingEvents: 15,
+      lastEventDate: "Yesterday",
+      followedDate: "Dec 1, 2024",
       notificationsEnabled: true,
       recentEvents: [
         {
-          id: "e3",
-          title: "Charity Drive: Winter Clothing",
-          date: "Dec 19, 2024",
-          time: "10:00 AM",
-          attendees: 56
+          id: "e5",
+          title: "Friday Prayer & Khutbah",
+          date: "Today",
+          time: "1:15 PM",
+          attendees: 215
         },
         {
-          id: "e4",
-          title: "Friday Community Dinner",
-          date: "Dec 21, 2024",
-          time: "6:00 PM",
-          attendees: 89
-        }
-      ]
-    },
-    {
-      id: "6",
-      name: "Islamic Center of Southern California",
-      city: "Los Angeles",
-      state: "CA",
-      distance: "22.8 miles",
-      avatar: "/api/placeholder/80/80",
-      upcomingEvents: 7,
-      lastEventDate: "Dec 8, 2024",
-      followedDate: "Dec 1, 2024",
-      notificationsEnabled: false,
-      recentEvents: [
-        {
-          id: "e5",
-          title: "Monthly Community Dinner",
-          date: "Dec 21, 2024",
-          time: "6:00 PM",
-          attendees: 45
+          id: "e6",
+          title: "Youth Halaqa",
+          date: "Saturday",
+          time: "6:30 PM",
+          attendees: 35
         }
       ]
     }

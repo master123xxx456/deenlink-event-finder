@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Navigation } from "@/components/Navigation";
+import Navigation from "@/components/Navigation";
 import { FloatingChatBot } from "@/components/FloatingChatBot";
 import FilterPopup, { FilterState } from "@/components/FilterPopup";
 import EventScrapingService, { ScrapedEvent } from "@/services/EventScrapingService";
@@ -116,12 +116,16 @@ const Events = () => {
           {/* Search and Filters */}
           <div className="max-w-4xl mx-auto space-y-4">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground dark:text-gray-400 w-5 h-5" />
               <Input
                 placeholder="Search events, masjids, or descriptions..."
                 value={filters.searchQuery}
                 onChange={(e) => setFilters({ ...filters, searchQuery: e.target.value })}
-                className="pl-12 pr-4 py-3 text-lg bg-white/95 backdrop-blur border-white/20 rounded-xl"
+                className="pl-12 pr-4 py-3 text-lg bg-white/95 dark:bg-black backdrop-blur border-white/20 dark:border-foreground/20 rounded-xl
+                  text-foreground dark:text-white
+                  placeholder:text-muted-foreground/80 dark:placeholder:text-gray-400
+                  focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                  transition-colors duration-200"
               />
             </div>
 

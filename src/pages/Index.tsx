@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Navigation } from "@/components/Navigation";
-import { FloatingChatBot } from "@/components/FloatingChatBot";
+import { useState, useEffect, useRef } from "react";
+import { Link, useLocation as useRouterLocation, useNavigate } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { Input } from "../components/ui/input";
+import Navigation from "../components/Navigation";
+import { FloatingChatBot } from "../components/FloatingChatBot";
+import PrayerTimes from "../components/PrayerTimes";
 import { 
   MapPin, 
   Calendar, 
@@ -16,7 +17,8 @@ import {
   Clock,
   TrendingUp,
   Heart,
-  Trophy
+  Trophy,
+  Clock3
 } from "lucide-react";
 
 interface Event {
@@ -33,9 +35,48 @@ interface Event {
 }
 
 const Index = () => {
-  const [location, setLocation] = useState<string>("");
+  const [userLocation, setUserLocation] = useState<string>("");
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const location = useRouterLocation();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<string>("home");
+  const prayerTimesRef = useRef<HTMLDivElement>(null);
+  const isMounted = useRef(false);
+
+  // Handle route changes
+  useEffect(() => {
+    if (location.pathname === '/prayer-times') {
+      setActiveTab('prayer-times');
+      // Small timeout to ensure the DOM has updated
+      setTimeout(() => {
+        prayerTimesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    } else {
+      setActiveTab('home');
+    }
+  }, [location.pathname]);
+
+  // Handle tab change from Navigation component
+  const handleTabChange = (tab: string) => {
+    if (!isMounted.current) return;
+    
+    setActiveTab(tab);
+    if (tab === 'prayer-times') {
+      navigate('/prayer-times');
+    } else {
+      navigate('/');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Set mounted flag after initial render
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // Mock featured events with different recommendation types
   const featuredEvents: Event[] = [
@@ -104,27 +145,41 @@ const Index = () => {
     getCurrentLocation();
   }, []);
 
+  // Set Gaithersburg, MD as the default location
+  const [defaultLocation] = useState("Gaithersburg, MD");
+
   const getCurrentLocation = () => {
     setIsLoadingLocation(true);
     
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
-          const { latitude, longitude } = position.coords;
-          
-          // Mock reverse geocoding - in real app, use Google Maps API
-          const mockLocation = "Gaithersburg, MD";
-          setLocation(mockLocation);
-          setIsLoadingLocation(false);
+          try {
+            const { latitude, longitude } = position.coords;
+            // In a real app, you would use a geocoding service here
+            // For now, we'll use the default location
+            setUserLocation(defaultLocation);
+          } catch (error) {
+            console.error("Error processing location:", error);
+            setUserLocation(defaultLocation); // Fallback to default on error
+          } finally {
+            setIsLoadingLocation(false);
+          }
         },
         (error) => {
           console.error("Error getting location:", error);
-          setLocation("Location not available");
+          setUserLocation(defaultLocation); // Use default location if geolocation fails
           setIsLoadingLocation(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
         }
       );
     } else {
-      setLocation("Geolocation not supported");
+      // If geolocation is not supported, use the default location
+      setUserLocation(defaultLocation);
       setIsLoadingLocation(false);
     }
   };
@@ -149,31 +204,45 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
+      <Navigation onTabChange={handleTabChange} activeTab={activeTab} />
       
-      {/* Hero Section */}
-      <section className="relative py-20 px-4 bg-gradient-hero overflow-hidden">
-        <div className="absolute inset-0 bg-black/10"></div>
+      {activeTab === 'prayer-times' ? (
+        <div id="prayer-times" ref={prayerTimesRef} className="pt-16 min-h-[80vh]">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Clock3 className="w-6 h-6" />
+                Prayer Times
+              </h2>
+            </div>
+            <PrayerTimes />
+          </div>
+        </div>
+      ) : (
+        <div>
+          {/* Hero Section */}
+          <section className="relative py-20 px-4 bg-gradient-hero overflow-hidden">
+            <div className="absolute inset-0 bg-black/10"></div>
         <div className="container mx-auto text-center relative z-10">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold text-white dark:text-foreground mb-6">
             Stay Connected to Your{" "}
-            <span className="text-accent drop-shadow-lg">Deen</span>
+            <span className="text-accent dark:text-accent-foreground drop-shadow-lg">Deen</span>
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl md:text-2xl text-white/90 dark:text-foreground/90 mb-8 max-w-3xl mx-auto">
             Discover Islamic events at local masjids and connect with your community across the U.S.
           </p>
           
           {/* Location Display */}
           <div className="flex items-center justify-center space-x-2 mb-8">
-            <MapPin className="w-5 h-5 text-white" />
-            <span className="text-white">
-              {isLoadingLocation ? "Finding your location..." : `Near ${location}`}
+            <MapPin className="w-5 h-5 text-white dark:text-foreground" />
+            <span className="text-white dark:text-foreground">
+              {isLoadingLocation ? "Finding your location..." : `Near ${userLocation}`}
             </span>
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={getCurrentLocation}
-              className="text-white hover:bg-white/20"
+              className="text-white dark:text-foreground hover:bg-white/20 dark:hover:bg-foreground/10"
             >
               Update
             </Button>
@@ -182,12 +251,16 @@ const Index = () => {
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto mb-8">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 dark:text-foreground/80" />
               <Input
                 placeholder="Search events, masjids, or ask our AI assistant..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-4 py-6 text-lg bg-white/95 backdrop-blur border-white/20 rounded-xl"
+                className="pl-12 pr-4 py-6 text-lg bg-white/95 dark:bg-black backdrop-blur border-white/20 dark:border-foreground/20 rounded-xl
+                  text-foreground dark:text-white
+                  placeholder:text-muted-foreground/80 dark:placeholder:text-gray-400
+                  focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                  transition-colors duration-200"
               />
             </div>
           </div>
@@ -196,8 +269,13 @@ const Index = () => {
             <Button size="lg" asChild className="bg-white text-primary hover:bg-white/90">
               <Link to="/events">Explore Events</Link>
             </Button>
-            <Button size="lg" variant="outline" asChild className="text-white border-white hover:bg-white/20">
-              <Link to="/auth">Join DeenLink</Link>
+            <Button 
+              size="lg" 
+              variant="ghost" 
+              asChild 
+              className="text-white border border-white hover:bg-transparent hover:border-white/70 hover:text-white"
+            >
+              <Link to="/auth" className="hover:no-underline">Join DeenLink</Link>
             </Button>
           </div>
         </div>
@@ -344,7 +422,9 @@ const Index = () => {
         </div>
       </section>
 
-      <FloatingChatBot />
+          <FloatingChatBot />
+        </div>
+      )}
     </div>
   );
 };

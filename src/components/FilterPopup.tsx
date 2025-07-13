@@ -89,9 +89,12 @@ const FilterPopup = ({ filters, onFiltersChange, onRefresh, isRefreshing }: Filt
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" className="relative bg-white/95 backdrop-blur border-white/20">
+        <Button 
+          variant="outline" 
+          className="relative bg-white/95 dark:bg-black/80 backdrop-blur border-white/20 dark:border-foreground/20 hover:bg-accent/90 hover:text-accent-foreground"
+        >
           <Filter className="w-4 h-4 mr-2" />
-          Filters
+          <span className="text-foreground dark:text-white">Filters</span>
           {getFilterCount() > 0 && (
             <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
               {getFilterCount()}
