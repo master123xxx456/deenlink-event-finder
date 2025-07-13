@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { cn } from "../lib/utils";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { ThemeToggle } from "./theme-toggle";
+import { useAuth } from "../hooks/use-auth";
 import { 
   Home, 
   Calendar, 
@@ -18,7 +19,9 @@ import {
   Moon,
   Sun,
   Settings,
-  LogOut
+  LogOut,
+  LogIn,
+  UserPlus
 } from "lucide-react";
 
 import {
@@ -26,7 +29,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "./ui/dropdown-menu";
 
 type NavItem = {
   id: string;
@@ -40,10 +43,11 @@ type NavigationProps = {
   activeTab?: string;
 };
 
-export default function Navigation({ onTabChange, activeTab }: NavigationProps) {
+export default function Navigation() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
 
   // Navigation items
   const navItems: NavItem[] = [
@@ -55,17 +59,8 @@ export default function Navigation({ onTabChange, activeTab }: NavigationProps) 
     { id: 'achievements', name: 'Achievements', icon: Trophy, path: '/achievements' },
   ];
 
-  // Get active tab based on URL or prop
-  const activeTabId = activeTab || 
-    navItems.find(item => item.path === location.pathname)?.id || 
-    'home';
-
-  // Update parent component when tab changes
-  useEffect(() => {
-    if (onTabChange) {
-      onTabChange(activeTabId);
-    }
-  }, [activeTabId, onTabChange]);
+  // Get active tab based on URL path
+  const activeTabId = navItems.find(item => item.path === location.pathname)?.id || 'home';
 
   // Add padding to body to account for fixed header
   useEffect(() => {
@@ -78,7 +73,9 @@ export default function Navigation({ onTabChange, activeTab }: NavigationProps) 
   // Handle navigation
   const handleNavigation = (item: NavItem, e: React.MouseEvent) => {
     e.preventDefault();
-    navigate(item.path);
+    if (location.pathname !== item.path) {
+      navigate(item.path);
+    }
     setIsMenuOpen(false);
   };
 
@@ -131,40 +128,97 @@ export default function Navigation({ onTabChange, activeTab }: NavigationProps) 
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <Badge variant="secondary" className="absolute -right-1 -top-1 h-4 w-4 justify-center p-0 text-[10px]">
-                3
-              </Badge>
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative">
+                      <Bell className="h-5 w-5" />
+                      <Badge variant="secondary" className="absolute -right-1 -top-1 h-4 w-4 justify-center p-0 text-[10px]">
+                        3
+                      </Badge>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80 p-0">
+                    <div className="flex items-center justify-between p-4 border-b">
+                      <h4 className="font-medium">Notifications</h4>
+                      <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-muted-foreground">
+                        Mark all as read
+                      </Button>
+                    </div>
+                    <div className="max-h-[400px] overflow-y-auto">
+                      {/* Sample notification items */}
+                      <DropdownMenuItem className="flex items-start gap-3 p-3 border-b hover:bg-accent/50 cursor-pointer">
+                        <div className="bg-primary/10 p-2 rounded-full">
+                          <Calendar className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">New Event</p>
+                          <p className="text-xs text-muted-foreground">Jumu'ah prayer at Masjid Al-Noor starts in 1 hour</p>
+                          <span className="text-xs text-muted-foreground">2 min ago</span>
+                        </div>
+                        <div className="w-2 h-2 rounded-full bg-primary mt-1"></div>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="flex items-start gap-3 p-3 border-b hover:bg-accent/50 cursor-pointer">
+                        <div className="bg-primary/10 p-2 rounded-full">
+                          <Trophy className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">Achievement Unlocked</p>
+                          <p className="text-xs text-muted-foreground">You've attended 5 events this month!</p>
+                          <span className="text-xs text-muted-foreground">1 hour ago</span>
+                        </div>
+                      </DropdownMenuItem>
+                    </div>
+                    <div className="p-2 border-t text-center">
+                      <Button variant="ghost" size="sm" className="text-sm text-primary">
+                        View all notifications
+                      </Button>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-4 w-4 text-primary" />
-                  </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-4 w-4 text-primary" />
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="w-full cursor-pointer flex items-center">
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="text-destructive focus:text-destructive"
+                      onClick={() => logout()}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/auth?tab=login" className="flex items-center">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Login
+                  </Link>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link to="/profile" className="w-full cursor-pointer flex items-center">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
+                <Button size="sm" asChild>
+                  <Link to="/auth?tab=signup" className="flex items-center">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Sign Up
                   </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/settings" className="w-full cursor-pointer flex items-center">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </Button>
+              </div>
+            )}
 
             <ThemeToggle />
 

@@ -57,11 +57,11 @@ const Masjids = () => {
       upcomingEvents: 12,
       isFollowing: false,
       isVerified: true,
-      phone: "(240) 344-6464",
+      phone: "(301) 459-9589",
       website: "https://diyanetamerica.org",
       description: "A premier Islamic center and cultural complex featuring a grand mosque, conference center, and educational facilities. The center serves as a hub for religious, educational, and cultural activities in the Washington DC metropolitan area.",
       specialties: ["Religious Education", "Cultural Events", "Community Services", "Interfaith Dialogue"],
-      imageUrl: "https://diyanetamerica.org/wp-content/uploads/2023/01/dca-exterior.jpg",
+      imageUrl: "/unnamed.jpg",
       nextEvent: {
         title: "Friday Khutbah & Prayer",
         date: "Today at 1:30 PM"
@@ -99,7 +99,7 @@ const Masjids = () => {
       upcomingEvents: 5,
       isFollowing: false,
       isVerified: true,
-      phone: "(301) 982-3192",
+      phone: "(301) 982-9848",
       website: "https://darussalaam.org",
       description: "A welcoming Islamic center focused on community building, family programs, and Islamic education for all ages.",
       specialties: ["Family Programs", "Sports Activities", "Children's Classes"],
@@ -141,7 +141,7 @@ const Masjids = () => {
       upcomingEvents: 14,
       isFollowing: false,
       isVerified: true,
-      phone: "(301) 869-9292",  // Verified correct
+      phone: "(240) 912-4976",  // Updated phone number
       website: "https://www.icomd.org",
       description: "A leading Islamic center serving the Muslim community in Montgomery County with comprehensive religious, educational, and social services. The center features a beautiful masjid, full-time school, and community center.",
       specialties: ["Islamic School", "Youth Programs", "Family Services", "Community Outreach"],
@@ -162,7 +162,7 @@ const Masjids = () => {
       upcomingEvents: 10,
       isFollowing: false,
       isVerified: true,
-      phone: "(410) 730-7195",  // Verified correct
+      phone: "(410) 997-5711",  // Updated phone number
       website: "https://daraltaqwa.org",
       description: "A prominent Islamic center serving the Muslim community in Maryland with a focus on authentic Islamic education and community services. The center features a beautiful masjid, full-time Islamic school, and various community programs in its new Columbia location.",
       specialties: ["Islamic Education", "Youth Programs", "Community Services", "Dawah Activities"],
@@ -183,7 +183,7 @@ const Masjids = () => {
       upcomingEvents: 6,
       isFollowing: false,
       isVerified: true,
-      phone: "(301) 459-7511",
+      phone: "(301) 459-4942",  // Updated phone number
       website: "https://www.pgmamd.org",
       description: "A vibrant Islamic center serving the Muslim community in Prince George's County with daily prayers, Jumu'ah services, and various educational programs for all ages.",
       specialties: ["Quran Classes", "Youth Programs", "Weekend School", "Community Services"],
@@ -204,7 +204,7 @@ const Masjids = () => {
       upcomingEvents: 12,
       isFollowing: false,
       isVerified: true,
-      phone: "(202) 882-2000",
+      phone: "(202) 450-1163",  // Updated phone number
       website: "https://www.firsthijrahdc.org",
       description: "A vibrant Islamic center in the heart of Washington, DC, providing religious services, educational programs, and community outreach initiatives to the local Muslim community.",
       specialties: ["Quran Classes", "Youth Programs", "Community Services", "Dawah Activities"],
@@ -225,7 +225,7 @@ const Masjids = () => {
       upcomingEvents: 8,
       isFollowing: false,
       isVerified: true,
-      phone: "(301) 434-3545",  // Verified correct
+      phone: "(202) 569-1763",  // Verified correct
       website: "https://www.firsthijrah.org",
       description: "A vibrant Islamic center serving the Muslim community in the Adelphi area with a focus on authentic Islamic education, youth development, and community services. Located near Powder Mill Road.",
       specialties: ["Quran Memorization", "Islamic Studies", "Youth Programs", "Community Services"],

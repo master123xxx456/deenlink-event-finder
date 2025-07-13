@@ -1,423 +1,245 @@
 import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import Navigation from "@/components/Navigation";
+import { useAuth } from "../hooks/use-auth";
 import { 
   Building2, 
-  Mail, 
-  Lock, 
-  User, 
-  MapPin, 
-  Phone,
-  Calendar,
-  Heart,
-  Star,
-  Users,
-  BookOpen,
-  Trophy
+  LogIn,
+  UserPlus,
+  User,
+  Mail,
+  Lock,
+  AlertCircle
 } from "lucide-react";
-
-interface OnboardingData {
-  location: string;
-  interests: string[];
-  ageGroup: string;
-  notificationPreferences: string[];
-}
+import OnboardingWizard from "../components/OnboardingWizard";
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
+  const { search, state } = useLocation();
+  const from = (state as { from?: { pathname: string } })?.from?.pathname || '/';
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  
+  // Check URL for tab parameter
+  const tab = new URLSearchParams(search).get('tab');
+  const [isLogin, setIsLogin] = useState(tab !== 'signup');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  // Removed local state for onboarding as we're using a route now
+  
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
     firstName: "",
     lastName: "",
-    phone: "",
-  });
-  
-  const [onboardingData, setOnboardingData] = useState<OnboardingData>({
-    location: "",
-    interests: [],
-    ageGroup: "",
-    notificationPreferences: []
   });
 
-  const interests = [
-    { id: "youth", label: "Youth Programs", icon: Users },
-    { id: "education", label: "Islamic Education", icon: BookOpen },
-    { id: "family", label: "Family Events", icon: Heart },
-    { id: "arabic", label: "Arabic Classes", icon: BookOpen },
-    { id: "sports", label: "Physical Activity", icon: Trophy },
-    { id: "community", label: "Community Service", icon: Users },
-    { id: "fundraiser", label: "Fundraisers", icon: Heart },
-    { id: "celebration", label: "Islamic Celebrations", icon: Star }
-  ];
-
-  const ageGroups = ["Teenager (13-17)", "Young Adult (18-25)", "Adult (26-40)", "Mature Adult (41+)", "Parent/Family"];
-
-  const notificationTypes = [
-    "New events from followed masjids",
-    "Personalized event recommendations",
-    "Events in my area",
-    "Event reminders",
-    "Achievement notifications",
-    "Weekly digest"
-  ];
-
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLogin) {
-      setShowOnboarding(true);
-    } else {
-      // Handle login
-      console.log("Login:", formData);
+    setError("");
+    setIsLoading(true);
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (!isLogin && formData.password !== formData.confirmPassword) {
+        throw new Error("Passwords do not match");
+      }
+
+      // In a real app, you would make an API call to your backend here
+      const mockUser = {
+        id: '123',
+        email: formData.email,
+        firstName: formData.firstName || 'User',
+        lastName: formData.lastName || '',
+        avatar: '',
+        createdAt: new Date().toISOString(),
+        preferences: {},
+        onboardingCompleted: false
+      };
+
+      // For demo purposes, we'll just log in with the mock user
+      login('mock-token', mockUser);
+      
+      // For new users, redirect to onboarding
+      if (!isLogin) {
+        navigate('/onboarding');
+      } else {
+        // For login, redirect to home or previous location
+        navigate(from, { replace: true });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleOnboardingNext = () => {
-    if (currentStep < 3) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      // Complete onboarding
-      console.log("Onboarding complete:", onboardingData);
-      // Redirect to dashboard
-    }
-  };
-
-  const toggleInterest = (interestId: string) => {
-    setOnboardingData(prev => ({
-      ...prev,
-      interests: prev.interests.includes(interestId)
-        ? prev.interests.filter(id => id !== interestId)
-        : [...prev.interests, interestId]
-    }));
-  };
-
-  const toggleNotification = (notification: string) => {
-    setOnboardingData(prev => ({
-      ...prev,
-      notificationPreferences: prev.notificationPreferences.includes(notification)
-        ? prev.notificationPreferences.filter(n => n !== notification)
-        : [...prev.notificationPreferences, notification]
-    }));
-  };
-
-  if (showOnboarding) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        
-        <div className="py-16 px-4">
-          <div className="container mx-auto max-w-2xl">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-2">Welcome to DeenLink!</h1>
-              <p className="text-muted-foreground">Let's personalize your experience</p>
-              
-              {/* Progress bar */}
-              <div className="flex items-center justify-center space-x-2 mt-6">
-                {[1, 2, 3].map((step) => (
-                  <div key={step} className="flex items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                      step <= currentStep ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                    }`}>
-                      {step}
-                    </div>
-                    {step < 3 && (
-                      <div className={`w-12 h-1 mx-2 ${
-                        step < currentStep ? "bg-primary" : "bg-muted"
-                      }`} />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <Card className="bg-gradient-card border-border/50">
-              <CardHeader>
-                <CardTitle>
-                  {currentStep === 1 && "Where are you located?"}
-                  {currentStep === 2 && "What interests you?"}
-                  {currentStep === 3 && "Notification preferences"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {currentStep === 1 && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="location">City or ZIP Code</Label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="location"
-                          placeholder="e.g., Gaithersburg, MD or 20878"
-                          value={onboardingData.location}
-                          onChange={(e) => setOnboardingData(prev => ({ ...prev, location: e.target.value }))}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Age Group</Label>
-                      <div className="grid grid-cols-1 gap-2">
-                        {ageGroups.map((group) => (
-                          <button
-                            key={group}
-                            type="button"
-                            onClick={() => setOnboardingData(prev => ({ ...prev, ageGroup: group }))}
-                            className={`p-3 text-left border rounded-lg transition-colors ${
-                              onboardingData.ageGroup === group
-                                ? "border-primary bg-primary/5 text-primary"
-                                : "border-border hover:border-primary/50"
-                            }`}
-                          >
-                            {group}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {currentStep === 2 && (
-                  <div className="space-y-4">
-                    <p className="text-muted-foreground">
-                      Select the types of events you're interested in to get personalized recommendations:
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
-                      {interests.map((interest) => (
-                        <button
-                          key={interest.id}
-                          type="button"
-                          onClick={() => toggleInterest(interest.id)}
-                          className={`p-4 border rounded-lg transition-all hover:shadow-md ${
-                            onboardingData.interests.includes(interest.id)
-                              ? "border-primary bg-primary/5 text-primary"
-                              : "border-border hover:border-primary/50"
-                          }`}
-                        >
-                          <div className="flex flex-col items-center space-y-2">
-                            <interest.icon className="w-6 h-6" />
-                            <span className="text-sm font-medium text-center">{interest.label}</span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Selected {onboardingData.interests.length} interests
-                    </p>
-                  </div>
-                )}
-
-                {currentStep === 3 && (
-                  <div className="space-y-4">
-                    <p className="text-muted-foreground">
-                      Choose how you'd like to stay updated about events:
-                    </p>
-                    <div className="space-y-3">
-                      {notificationTypes.map((notification) => (
-                        <div key={notification} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={notification}
-                            checked={onboardingData.notificationPreferences.includes(notification)}
-                            onCheckedChange={() => toggleNotification(notification)}
-                          />
-                          <Label htmlFor={notification} className="text-sm">
-                            {notification}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-between pt-6">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
-                    disabled={currentStep === 1}
-                  >
-                    Previous
-                  </Button>
-                  <Button onClick={handleOnboardingNext}>
-                    {currentStep === 3 ? "Complete Setup" : "Next"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Removed local onboarding state management as we're using a route now
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <div className="py-16 px-4">
-        <div className="container mx-auto max-w-md">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <Building2 className="w-8 h-8 text-primary-foreground" />
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <div className="flex flex-col items-center space-y-2">
+            <div className="bg-primary/10 p-3 rounded-full">
+              <Building2 className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold mb-2">
-              {isLogin ? "Welcome Back" : "Join DeenLink"}
-            </h1>
-            <p className="text-muted-foreground">
+            <h2 className="text-2xl font-bold text-center">
+              {isLogin ? 'Welcome back' : 'Create an account'}
+            </h2>
+            <p className="text-muted-foreground text-center text-sm">
               {isLogin 
-                ? "Sign in to discover events at your local masjids" 
-                : "Create an account to get personalized event recommendations"
-              }
+                ? 'Enter your email and password to sign in' 
+                : 'Fill in your details to create an account'}
             </p>
           </div>
-
-          <Card className="bg-gradient-card border-border/50">
-            <CardHeader>
-              <CardTitle>{isLogin ? "Sign In" : "Create Account"}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleFormSubmit} className="space-y-4">
-                {!isLogin && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input
-                        id="firstName"
-                        value={formData.firstName}
-                        onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input
-                        id="lastName"
-                        value={formData.lastName}
-                        onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="your.email@example.com"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {!isLogin && (
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone (Optional)</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="(555) 123-4567"
-                        value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {!isLogin && (
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        value={formData.confirmPassword}
-                        onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <Button type="submit" className="w-full">
-                  {isLogin ? "Sign In" : "Create Account"}
-                </Button>
-              </form>
-
-              <div className="mt-6 text-center">
-                <p className="text-muted-foreground">
-                  {isLogin ? "Don't have an account?" : "Already have an account?"}
-                  <button
-                    type="button"
-                    onClick={() => setIsLogin(!isLogin)}
-                    className="ml-2 text-primary hover:underline font-medium"
-                  >
-                    {isLogin ? "Sign up" : "Sign in"}
-                  </button>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Features for new users */}
-          {!isLogin && (
-            <div className="mt-8 space-y-4">
-              <h3 className="text-lg font-semibold text-center">What you'll get with DeenLink:</h3>
-              <div className="grid grid-cols-1 gap-3">
-                <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-                  <Heart className="w-5 h-5 text-primary" />
-                  <span className="text-sm">Personalized event recommendations</span>
-                </div>
-                <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-                  <Star className="w-5 h-5 text-primary" />
-                  <span className="text-sm">Follow your favorite masjids</span>
-                </div>
-                <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-                  <Trophy className="w-5 h-5 text-primary" />
-                  <span className="text-sm">Earn achievements for participation</span>
-                </div>
-                <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  <span className="text-sm">Never miss important events</span>
-                </div>
-              </div>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <div className="mb-4 p-3 bg-destructive/10 text-destructive text-sm rounded-md flex items-start">
+              <AlertCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
+              <span>{error}</span>
             </div>
           )}
-        </div>
-      </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                    disabled={isLoading}
+                    required={!isLogin}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                    disabled={isLoading}
+                    required={!isLogin}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  className="pl-10"
+                  disabled={isLoading}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                {isLogin && (
+                  <Link 
+                    to="/forgot-password" 
+                    className="text-xs text-primary hover:underline"
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    Forgot password?
+                  </Link>
+                )}
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  className="pl-10"
+                  disabled={isLoading}
+                  minLength={8}
+                  required
+                />
+              </div>
+            </div>
+
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    className="pl-10"
+                    disabled={isLoading}
+                    minLength={8}
+                    required={!isLogin}
+                  />
+                </div>
+              </div>
+            )}
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {isLogin ? 'Signing in...' : 'Creating account...'}
+                </>
+              ) : isLogin ? (
+                <>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Sign In
+                </>
+              ) : (
+                <>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Create Account
+                </>
+              )}
+            </Button>
+          </form>
+
+          <div className="mt-4 text-center text-sm">
+            {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+            <Button
+              type="button"
+              variant="link"
+              className="h-auto p-0 text-primary"
+              onClick={() => {
+                setError('');
+                setIsLogin(!isLogin);
+                navigate(isLogin ? '/auth?tab=signup' : '/auth?tab=login');
+              }}
+              disabled={isLoading}
+            >
+              {isLogin ? 'Sign up' : 'Sign in'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -46,12 +46,12 @@ const Achievements = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const userStats: UserStats = {
-    totalPoints: 1250,
-    level: 8,
-    eventsAttended: 23,
-    masjidsVisited: 5,
-    streakDays: 12,
-    achievementsUnlocked: 15
+    totalPoints: 0,
+    level: 0,
+    eventsAttended: 0,
+    masjidsVisited: 0,
+    streakDays: 0,
+    achievementsUnlocked: 0
   };
 
   const achievements: Achievement[] = [
@@ -61,11 +61,10 @@ const Achievements = () => {
       description: "Attend your first Islamic event",
       category: "participation",
       icon: Star,
-      isUnlocked: true,
-      progress: 1,
+      isUnlocked: false,
+      progress: 0,
       maxProgress: 1,
       points: 50,
-      unlockedDate: "Nov 15, 2024",
       rarity: "common"
     },
     {
@@ -74,11 +73,10 @@ const Achievements = () => {
       description: "Attend 10 events",
       category: "participation",
       icon: Users,
-      isUnlocked: true,
-      progress: 10,
+      isUnlocked: false,
+      progress: 0,
       maxProgress: 10,
       points: 200,
-      unlockedDate: "Dec 1, 2024",
       rarity: "rare"
     },
     {
@@ -87,11 +85,10 @@ const Achievements = () => {
       description: "Attend 5 educational events",
       category: "education",
       icon: BookOpen,
-      isUnlocked: true,
-      progress: 5,
+      isUnlocked: false,
+      progress: 0,
       maxProgress: 5,
       points: 150,
-      unlockedDate: "Nov 28, 2024",
       rarity: "rare"
     },
     {
@@ -100,11 +97,10 @@ const Achievements = () => {
       description: "Visit 3 different masjids",
       category: "exploration",
       icon: Trophy,
-      isUnlocked: true,
-      progress: 3,
+      isUnlocked: false,
+      progress: 0,
       maxProgress: 3,
       points: 100,
-      unlockedDate: "Nov 22, 2024",
       rarity: "common"
     },
     {
@@ -113,11 +109,10 @@ const Achievements = () => {
       description: "Follow 10 masjids",
       category: "social",
       icon: Heart,
-      isUnlocked: true,
-      progress: 10,
+      isUnlocked: false,
+      progress: 0,
       maxProgress: 10,
       points: 100,
-      unlockedDate: "Dec 5, 2024",
       rarity: "common"
     },
     {
@@ -127,7 +122,7 @@ const Achievements = () => {
       category: "participation",
       icon: Calendar,
       isUnlocked: false,
-      progress: 23,
+      progress: 0,
       maxProgress: 25,
       points: 300,
       rarity: "epic"
@@ -175,7 +170,7 @@ const Achievements = () => {
       category: "participation",
       icon: Trophy,
       isUnlocked: false,
-      progress: 23,
+      progress: 0,
       maxProgress: 100,
       points: 1500,
       rarity: "legendary"
